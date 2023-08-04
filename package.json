@@ -1,0 +1,19 @@
+{
+  "name": "bsu-music-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for the BSU music department",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "author": "Zach Nichols",
+  "license": "ISC",
+  "keywords": [],
+  "devDependencies": {
+    "eslint": "^8.46.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.12.1",
+    "dotenv": "^16.3.1"
+  }
+}
