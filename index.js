@@ -1,21 +1,25 @@
 require('dotenv').config();
-const { Client, Events, GatewayIntentBits, TextChannel} = require('discord.js');
+const { Client, Events, GatewayIntentBits, TextChannel, ActivityType } = require('discord.js');
 const fs = require('fs');
+const scraper = require('./commands/scraper.js');
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds]});
 
 // When the client is ready, run this code (only once)
 // We use 'c' for the event parameter to keep it separate from the already defined 'client'
 client.once(Events.ClientReady, c => {
 	console.log(`Ready! Logged in as ${c.user.tag}`);
 	postAnnouncement();
+	client.user.setActivity('Barbie', {
+		type: 3,
+		url: 'https://youtu.be/dQw4w9WgXcQ',
+	})
 });
 
 // Log in to Discord with your client's token
 client.login(process.env.DISCORD_TOKEN);
 
-const scraper = require('./scraper.js');
 
 async function postAnnouncement() {
 	let firstTimeCall = false;
@@ -29,15 +33,40 @@ async function postAnnouncement() {
 async function scrapeAndFormat()
 {
 	await scraper.scrapeD2L().then((result) => {
-		const res = result.replaceAll('<p>', '').replaceAll('</p>', '\n');
+		let res = result.replaceAll('<p>', '').replaceAll('</p>', '\n');
+		res = res.decodeHTML();
 
 		if (sendNewMessage(res))
 		{
 			sendMessage(res, process.env.TEST_CHANNEL);
+
+			sendLog(true);
+		}
+		else
+		{
+			sendLog(false);
 		}
 	});
+}
 
-	console.log("Scraped and formatted at " + new Date().toLocaleString());
+function sendLog(scrapeStatus)
+{
+	const channel = client.channels.cache.get(process.env.TEST_CHANNEL);
+
+	if (scrapeStatus)
+	{
+		if (channel instanceof TextChannel)
+		{
+			channel.send("\"Scraped and formatted at " + new Date().toLocaleString() + ". New announcement found.");
+		}
+	}
+	else
+	{
+		if (channel instanceof TextChannel)
+		{
+			channel.send("Scraped and formatted at " + new Date().toLocaleString() + ". No announcement found.");
+		}
+	}
 }
 
 function sendMessage(message, id)
@@ -45,7 +74,7 @@ function sendMessage(message, id)
 	const channel = client.channels.cache.get(id);
 	if (channel instanceof TextChannel)
 	{
-		channel.send("# Announcement\n" + message);
+		channel.send("@everyone\n# Announcement\n" + message);
 	}
 }
 
@@ -67,3 +96,14 @@ function sendNewMessage(message)
 	fs.writeFileSync("msg.txt", message);
 	return true;
 }
+
+String.prototype.decodeHTML = function() {
+	let map = {"gt":">" /* , … */};
+	return this.replace(/&(#(?:x[0-9a-f]+|\d+)|[a-z]+);?/gi, function($0, $1) {
+		if ($1[0] === "#") {
+			return String.fromCharCode($1[1].toLowerCase() === "x" ? parseInt($1.substr(2), 16)  : parseInt($1.substr(1), 10));
+		} else {
+			return map.hasOwnProperty($1) ? map[$1] : $0;
+		}
+	});
+};
