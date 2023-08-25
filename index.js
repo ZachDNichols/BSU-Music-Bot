@@ -34,11 +34,18 @@ async function scrapeAndFormat()
 {
 	await scraper.scrapeD2L().then((result) => {
 		let res = result.replaceAll('<p>', '').replaceAll('</p>', '\n');
+		res = res.replaceAll('<br>', '\n');
+		res = res.replaceAll('<br/>', '\n');
+		res = res.replaceAll('<br />', '\n');
+		res = res.replaceAll('<a', '').replaceAll('</a>', '');
+		res = res.replaceAll('">', ' ');
+		res = res.replaceAll ('href="', '').replaceAll('"', '');
+		res = res.replaceAll('rel=.*?"', '');
 		res = res.decodeHTML();
 
 		if (sendNewMessage(res))
 		{
-			sendMessage(res, process.env.TEST_CHANNEL);
+			sendMessage(res, process.env.ANNOUNCE_CHANNEL);
 
 			sendLog(true);
 		}
@@ -57,7 +64,7 @@ function sendLog(scrapeStatus)
 	{
 		if (channel instanceof TextChannel)
 		{
-			channel.send("\"Scraped and formatted at " + new Date().toLocaleString() + ". New announcement found.");
+			channel.send("Scraped and formatted at " + new Date().toLocaleString() + ". New announcement found.");
 		}
 	}
 	else
@@ -76,6 +83,8 @@ function sendMessage(message, id)
 	{
 		channel.send("@everyone\n# Announcement\n" + message);
 	}
+
+	console.log( channel.type );
 }
 
 function sendNewMessage(message)
