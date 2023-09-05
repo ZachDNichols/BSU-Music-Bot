@@ -132,3 +132,6 @@ dist
 #Bot stuff
 .env
 config.json
+*.ppk
+FileZilla.xml
+.DS_Store

@@ -24,11 +24,15 @@ client.login(process.env.DISCORD_TOKEN);
 async function postAnnouncement() {
 	let firstTimeCall = false;
 	if (!firstTimeCall) {
-		await scrapeAndFormat().then((result) => { 	firstTimeCall = true; });
+		try {
+			await scrapeAndFormat().then((result) => { 	firstTimeCall = true; });
+		}
+		catch (e) {
+			sendMessage("HELP! I can't scrape D2L! " + e, process.env.TEST_CHANNEL);
 	}
 
 	setInterval(await scrapeAndFormat, 86400000);
-}
+}}
 
 async function scrapeAndFormat()
 {
@@ -81,10 +85,8 @@ function sendMessage(message, id)
 	const channel = client.channels.cache.get(id);
 	if (channel instanceof TextChannel)
 	{
-		channel.send("@everyone\n# Announcement\n" + message);
+		channel.send("\n# Announcement\n" + message);
 	}
-
-	console.log( channel.type );
 }
 
 function sendNewMessage(message)
@@ -114,5 +116,4 @@ String.prototype.decodeHTML = function() {
 		} else {
 			return map.hasOwnProperty($1) ? map[$1] : $0;
 		}
-	});
-};
+});}
