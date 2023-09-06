@@ -9,7 +9,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds]});
 // When the client is ready, run this code (only once)
 // We use 'c' for the event parameter to keep it separate from the already defined 'client'
 client.once(Events.ClientReady, c => {
-	console.log(`Ready! Logged in as ${c.user.tag}`);
+	sendMessage("I'm awake", process.env.TEST_CHANNEL);
 	postAnnouncement();
 	client.user.setActivity('Barbie', {
 		type: 3,
@@ -22,16 +22,17 @@ client.login(process.env.DISCORD_TOKEN);
 
 
 async function postAnnouncement() {
-	let firstTimeCall = false;
-	if (!firstTimeCall) {
-		try {
-			await scrapeAndFormat().then((result) => { 	firstTimeCall = true; });
-		}
-		catch (e) {
-			sendMessage("HELP! I can't scrape D2L! " + e, process.env.TEST_CHANNEL);
+{
+	try {
+		await scrapeAndFormat().then((result) => { 	firstTimeCall = true; });
 	}
-
-	setInterval(await scrapeAndFormat, 86400000);
+	catch (e) {
+		sendMessage("HELP! I can't scrape D2L! " + e, process.env.TEST_CHANNEL);
+	}
+	var dateStr = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
+	var now = new Date(dateStr);
+	var millisTill = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0) - now;
+	setInterval(await postAnnouncement, millisTill);
 }}
 
 async function scrapeAndFormat()
@@ -49,7 +50,7 @@ async function scrapeAndFormat()
 
 		if (sendNewMessage(res))
 		{
-			sendMessage(res, process.env.ANNOUNCE_CHANNEL);
+			sendMessage("\n# Announcement\n" + res, process.env.ANNOUNCE_CHANNEL);
 
 			sendLog(true);
 		}
@@ -85,7 +86,7 @@ function sendMessage(message, id)
 	const channel = client.channels.cache.get(id);
 	if (channel instanceof TextChannel)
 	{
-		channel.send("\n# Announcement\n" + message);
+		channel.send(message);
 	}
 }
 
