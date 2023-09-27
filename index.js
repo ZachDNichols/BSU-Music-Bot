@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, Events, GatewayIntentBits, TextChannel, ActivityType } = require('discord.js');
+const { Client, Events, GatewayIntentBits, TextChannel } = require('discord.js');
 const fs = require('fs');
 const scraper = require('./commands/scraper.js');
 
@@ -24,14 +24,14 @@ client.login(process.env.DISCORD_TOKEN);
 async function postAnnouncement() {
 {
 	try {
-		await scrapeAndFormat().then((result) => { 	firstTimeCall = true; });
+		await scrapeAndFormat();
 	}
 	catch (e) {
 		sendMessage("HELP! I can't scrape D2L! " + e, process.env.TEST_CHANNEL);
 	}
 	var dateStr = new Date().toLocaleString("en-US", { timeZone: "America/Chicago" });
 	var now = new Date(dateStr);
-	var millisTill = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0) - now;
+	var millisTill = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 0, 0, 0) - now;
 	setInterval(await postAnnouncement, millisTill);
 }}
 
@@ -42,6 +42,7 @@ async function scrapeAndFormat()
 		res = res.replaceAll('<br>', '\n');
 		res = res.replaceAll('<br/>', '\n');
 		res = res.replaceAll('<br />', '\n');
+		res = res.replaceAll('<div>', '').replaceAll('</div>', '\n');
 		res = res.replaceAll('<a', '').replaceAll('</a>', '');
 		res = res.replaceAll('">', ' ');
 		res = res.replaceAll ('href="', '').replaceAll('"', '');
@@ -50,7 +51,7 @@ async function scrapeAndFormat()
 
 		if (sendNewMessage(res))
 		{
-			sendMessage("\n# Announcement\n" + res, process.env.ANNOUNCE_CHANNEL);
+			sendMessage("\n# Announcement\n" + res, process.env.TEST_CHANNEL);
 
 			sendLog(true);
 		}
